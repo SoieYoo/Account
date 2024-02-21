@@ -18,7 +18,6 @@ public class AccountController {
     public String getLock() {
         return redisTestService.getLock();
     }
-
     @GetMapping("/create-account")
     public String createAccount() {
         accountService.createAccount();
