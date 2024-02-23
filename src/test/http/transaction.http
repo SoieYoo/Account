@@ -16,3 +16,6 @@ Content-Type: application/json
   "accountNumber": "1000000000",
   "amount": 1500
 }
+
+### query transaction
+GET http://localhost:8080/transaction/b3b840f7cc504027859e3bda731f5756

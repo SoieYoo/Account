@@ -423,4 +423,52 @@ class TransactionServiceTest {
         assertEquals(ErrorCode.TOO_OLD_ORDER_TO_CANCEL , accountException.getErrorCode());
     }
 
+    @Test
+    void successQueryTransaction() {
+        AccountUser user = AccountUser.builder()
+                .id(12L)
+                .name("Soi")
+                .build();
+        Account account = Account.builder()
+                .id(1L)
+                .accountUser(user)
+                .accountStatus(AccountStatus.IN_USE)
+                .balance(10000L)
+                .accountNumber("1000000012")
+                .build();
+        Transaction transaction = Transaction.builder()
+                .account(account)
+                .transactionType(USE)
+                .transactionResultType(S)
+                .transactionId("transactionId")
+                .transactedAt(LocalDateTime.now().minusYears(1).minusDays(1))
+                .amount(200L)
+                .balanceSnapshot(9000L)
+                .build();
+        //given
+        given(transactionRepository.findByTransactionId(anyString()))
+                .willReturn(Optional.of(transaction));
+        //when
+        TransactionDto transactionDto = transactionService.queryTransaction("trxId");
+
+        //then
+        assertEquals(USE, transactionDto.getTransactionType());
+        assertEquals(S, transactionDto.getTransactionResultType());
+        assertEquals(200L, transactionDto.getAmount());
+        assertEquals("transactionId", transactionDto.getTransactionId());
+    }
+
+    @Test
+    @DisplayName("원 거래 없음 - 거래 조회 실패")
+    void queryTransaction_transactionNotFound() {
+        //given
+        given(transactionRepository.findByTransactionId(anyString()))
+                .willReturn(Optional.empty());
+        //when
+        AccountException accountException = assertThrows(AccountException.class
+                , () -> transactionService.queryTransaction("transactionId"));
+        //then
+        assertEquals(ErrorCode.TRANSACTION_NOT_FOUND , accountException.getErrorCode());
+    }
+
 }
