@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static com.example.account.type.AccountStatus.IN_USE;
@@ -38,9 +39,11 @@ public class AccountService {
 
         validateCreateAccount(accountUser);
 
-        String accountNumber = accountRepository.findFirstByOrderByIdDesc()
-                .map(account -> Integer.parseInt(account.getAccountNumber()) + 1 + "")
-                .orElse("1000000000");
+        String accountNumber = generateUniqueAccountNumber();
+
+//        String accountNumber = accountRepository.findFirstByOrderByIdDesc()
+//                .map(account -> Integer.parseInt(account.getAccountNumber()) + 1 + "")
+//                .orElse("1000000000");
 
         Account account = accountRepository.save(
                 Account.builder()
@@ -53,6 +56,18 @@ public class AccountService {
         );
         return AccountDto.fromEntity(account);
     }
+
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        Random random = new Random();
+
+        do {
+            accountNumber = String.format("%010d", random.nextInt(1000000000));
+        } while (accountRepository.existsByAccountNumber(accountNumber));
+
+        return accountNumber;
+    }
+
 
     private void validateCreateAccount(AccountUser accountUser) {
         if (accountRepository.countByAccountUser(accountUser) == 10) {
